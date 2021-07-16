@@ -38,7 +38,7 @@ ucg_minimal_init(ucg_minimal_ctx_t *ctx,
     ucg_params_t ucg_context_params = {0};
     int is_server                   = (flags & UCG_MINIMAL_FLAG_SERVER);
     ucp_context_params.field_mask   = UCP_PARAM_FIELD_FEATURES;
-    ucp_context_params.features     = UCP_FEATURE_GROUPS;
+    ucp_context_params.features     = UCP_FEATURE_GROUPS | UCP_FEATURE_AM;
     ucg_context_params.super        = &ucp_context_params;
     ucg_context_params.field_mask   = UCG_PARAM_FIELD_ADDRESS_CB;
     ucg_group_attr_t group_attr     = {
@@ -73,7 +73,7 @@ ucg_minimal_init(ucg_minimal_ctx_t *ctx,
         goto cleanup_worker;
     }
 
-    if (is_server) {
+    if (!is_server) {
         status = ucg_group_listener_connect(ctx->group, server_address);
         if (status != UCS_OK) {
             goto cleanup_group;
@@ -140,12 +140,12 @@ ucg_minimal_broadcast(ucg_minimal_ctx_t *ctx, void *buffer, size_t length)
             },
             .buffer        = buffer,
             .count         = length,
-            .dtype         = (void*)ucp_dt_make_contig(1)
+            .dtype         = NULL
         },
         .recv = {
             .buffer        = buffer,
             .count         = length,
-            .dtype         = (void*)ucp_dt_make_contig(1)
+            .dtype         = NULL
         }
     };
 

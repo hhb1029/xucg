@@ -52,4 +52,7 @@ typedef struct ucg_context {
     ucp_context_t         ucp_ctx; /* must be last, for ABI compatibility */
 } ucg_context_t;
 
+void ucg_context_copy_used_ucg_params(ucg_params_t *dst,
+                                      const ucg_params_t *src);
+
 #endif /* UCG_CONTEXT_H_ */

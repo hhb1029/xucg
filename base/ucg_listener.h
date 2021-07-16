@@ -21,4 +21,7 @@ typedef struct ucg_listener_group_info {
 
 ucs_status_t ucg_listener_am_init(uint8_t am_id, ucs_list_link_t *groups_head);
 
+ucs_status_t ucg_group_listener_set_info_cb(void *arg, void *data,
+                                            size_t length, unsigned flags);
+
 #endif /* UCG_LISTENER_H_ */

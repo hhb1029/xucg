@@ -8,7 +8,6 @@
 
 #include <ucg/api/ucg_def.h>
 #include <ucg/api/ucg_version.h>
-
 #include <ucp/api/ucp.h>
 
 BEGIN_C_DECLS

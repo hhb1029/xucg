@@ -117,8 +117,8 @@ ucs_status_t ucg_plan_query(ucg_plan_desc_t **desc_p, unsigned *num_desc_p,
 
             ucs_assertv_always(!strncmp(component->name, desc_iter[i].name,
                                         strlen(component->name)),
-                               "Planner name must begin with topology component name."
-                               "Planner name: %s Plan component name: %s ",
+                               "Planner name must begin with the component name."
+                               "Planner name: %s\tComponent name: %s ",
                                desc_iter[i].name, component->name);
         }
 
@@ -545,7 +545,7 @@ static ucs_status_t ucg_plan_connect_incast(ucg_group_h group,
     do {
         lane = ucp_ep_get_incast_lane(ucp_ep);
         if (ucs_unlikely(lane == UCP_NULL_LANE)) {
-            ucs_warn("No transports with native incast support were found,"
+            ucs_info("No transports with native incast support were found,"
                      " falling back to P2P transports (slower)");
             return UCS_ERR_UNREACHABLE;
         }

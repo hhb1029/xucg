@@ -292,8 +292,8 @@ static void ucg_context_copy_used_ucp_params(ucp_params_t *dst,
     ((sizeof(_n) <= 4) ? __builtin_clz((uint32_t)(_n)) : __builtin_clzl(_n))
 #endif
 
-static void ucg_context_copy_used_ucg_params(ucg_params_t *dst,
-                                             const ucg_params_t *src)
+void ucg_context_copy_used_ucg_params(ucg_params_t *dst,
+                                      const ucg_params_t *src)
 {
     size_t ucg_params_size = sizeof(src->field_mask) +
                              ucs_offsetof(ucg_params_t, field_mask);
