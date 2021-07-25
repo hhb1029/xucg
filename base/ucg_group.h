@@ -40,24 +40,24 @@ typedef struct ucg_group {
      * Whether a current barrier is waited upon. If so, new collectives cannot
      * start until this barrier is cleared, so it is put in the pending queue.
      */
-    volatile uint32_t          is_barrier_outstanding;
-    uint32_t                   is_cache_cleanup_due;
+    volatile uint32_t        is_barrier_outstanding;
+    uint32_t                 is_cache_cleanup_due;
 
 #if ENABLE_MT
     ucs_recursive_spinlock_t lock;
 #endif
 
-    ucg_context_h         context;      /**< Back-reference to UCP context */
-    ucp_worker_h          worker;       /**< for conn. est. and progress calls */
-    ucg_coll_id_t         next_coll_id; /**< for the next collective operation */
-    ucs_queue_head_t      pending;      /**< requests currently pending execution */
-    ucg_group_params_t    params;       /**< parameters, for future connections */
-    ucs_list_link_t       list;         /**< worker's group list */
-    ucg_plan_resources_t *resources;    /**< resources available to this group */
-    khash_t(ucg_group_ep) p2p_eps;      /**< P2P endpoints, by member index */
-    khash_t(ucg_group_ep) bcast_eps;    /**< bcast endpoints, by member index */
-    ucs_ptr_array_t       incast_eps;   /**< incast endpoints, by member index
-                                             and incast callback */
+    ucg_context_h            context;      /**< Back-reference to UCP context */
+    ucp_worker_h             worker;       /**< for conn. est. and progress calls */
+    ucg_coll_id_t            next_coll_id; /**< for the next collective operation */
+    ucs_queue_head_t         pending;      /**< requests currently pending execution */
+    ucg_group_params_t       params;       /**< parameters, for future connections */
+    ucs_list_link_t          list;         /**< worker's group list */
+    ucg_plan_resources_t    *resources;    /**< resources available to this group */
+    khash_t(ucg_group_ep)    p2p_eps;      /**< P2P endpoints, by member index */
+    khash_t(ucg_group_ep)    bcast_eps;    /**< bcast endpoints, by member index */
+    ucs_ptr_array_t          incast_eps;   /**< incast endpoints, by member index
+                                                and incast callback */
 
     UCS_STATS_NODE_DECLARE(stats);
 
@@ -68,18 +68,19 @@ typedef struct ucg_group {
      * requested collective parameters. The cache size is a total across all
      * collective types.
      */
-    unsigned              cache_size;
-    ucg_plan_t           *cache_by_modifiers[UCG_GROUP_CACHE_MODIFIER_MASK];
-    ucg_plan_t           *cache_nonzero_root[UCG_GROUP_MSG_SIZE_LEVEL][UCG_GROUP_MAX_ROOT_PARAM];
+    unsigned                 cache_size;
+    ucg_plan_t              *cache_by_modifiers[UCG_GROUP_CACHE_MODIFIER_MASK];
+    ucg_plan_t              *cache_nonzero_root[UCG_GROUP_MSG_SIZE_LEVEL]
+                                               [UCG_GROUP_MAX_ROOT_PARAM];
 
     /*
      * for root collective operations(e.g. Bcast), the parameter of root should be
      * the criterion to decide whether plan has been found.
      */
-    unsigned              root_used[UCG_GROUP_MAX_ROOT_PARAM];
+    unsigned                 root_used[UCG_GROUP_MAX_ROOT_PARAM];
 
     /* Group name for tracing and analysis */
-    char                  name[UCG_GROUP_NAME_MAX];
+    char                     name[UCG_GROUP_NAME_MAX];
 
     /* Below this point - the private per-planner data is allocated/stored */
 } ucg_group_t;

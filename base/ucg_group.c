@@ -271,8 +271,15 @@ ucs_status_t ucg_group_wireup_coll_ifaces(ucg_group_h group,
         return status;
     }
 
-    /* Because address lengths aren't equal among nodes - round up and pray. */
-    addr_len = ucs_roundup_pow2(addr_len); // TODO: find a way to get the same.
+    /*
+     * TODO: Because address lengths might not be equal among nodes,
+     *       the broadcast may corrupt memory or deliver a partial result if
+     *       the hosts are not identical (e.g. one has more NICs, making for
+     *       a longer UCP address). Ideally the clients would like to recieve
+     *       any address, but broadcast API must be given a length - so the
+     *       fallback is to call broadcast twice: once for the length and then
+     *       a second time for the address with that length.
+     */
 
     /* Broadcast the address */
     status = ucg_group_wireup_coll_iface_bcast_addresses(group, addrs,
@@ -787,6 +794,7 @@ ucs_status_t ucg_collective_acquire_barrier(ucg_group_h group)
 ucs_status_t ucg_collective_release_barrier(ucg_group_h group)
 {
     ucs_status_t status;
+    ucg_op_t *op;
 
     ucs_assert(group->is_barrier_outstanding == 1);
     group->is_barrier_outstanding = 0;
@@ -796,7 +804,8 @@ ucs_status_t ucg_collective_release_barrier(ucg_group_h group)
     if (!ucs_queue_is_empty(&group->pending)) {
         do {
             /* Start the next pending operation */
-            ucg_op_t *op = (ucg_op_t*)ucs_queue_pull_non_empty(&group->pending);
+            op     = ucs_container_of(ucs_queue_pull_non_empty(&group->pending),
+                                      ucg_op_t, queue);
             status = ucg_collective_trigger(group, op, op->pending_req);
         } while ((!ucs_queue_is_empty(&group->pending)) &&
                  (!group->is_barrier_outstanding) &&

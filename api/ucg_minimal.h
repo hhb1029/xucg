@@ -33,22 +33,22 @@ ucg_minimal_init(ucg_minimal_ctx_t *ctx,
 {
     ucs_status_t status;
     ucg_config_t *context_config;
-    ucp_worker_params_t worker_params;
-    ucp_params_t ucp_context_params = {0};
-    ucg_params_t ucg_context_params = {0};
-    int is_server                   = (flags & UCG_MINIMAL_FLAG_SERVER);
-    ucp_context_params.field_mask   = UCP_PARAM_FIELD_FEATURES;
-    ucp_context_params.features     = UCP_FEATURE_GROUPS | UCP_FEATURE_AM;
-    ucg_context_params.super        = &ucp_context_params;
-    ucg_context_params.field_mask   = UCG_PARAM_FIELD_ADDRESS_CB;
-    ucg_group_attr_t group_attr     = {
-            .field_mask             = UCG_GROUP_ATTR_FIELD_MEMBER_COUNT
+    ucp_worker_params_t worker_params = {0};
+    ucp_params_t ucp_context_params   = {0};
+    ucg_params_t ucg_context_params   = {0};
+    int is_server                     = (flags & UCG_MINIMAL_FLAG_SERVER);
+    ucp_context_params.field_mask     = UCP_PARAM_FIELD_FEATURES;
+    ucp_context_params.features       = UCP_FEATURE_GROUPS;
+    ucg_context_params.super          = &ucp_context_params;
+    ucg_context_params.field_mask     = UCG_PARAM_FIELD_ADDRESS_CB;
+    ucg_group_attr_t group_attr       = {
+            .field_mask               = UCG_GROUP_ATTR_FIELD_MEMBER_COUNT
     };
-    ucg_group_params_t group_params = {
-            .field_mask             = UCG_GROUP_PARAM_FIELD_MEMBER_COUNT |
-                                      UCG_GROUP_PARAM_FIELD_MEMBER_INDEX,
-            .member_index           = !is_server,
-            .member_count           = 1 + !is_server
+    ucg_group_params_t group_params   = {
+            .field_mask               = UCG_GROUP_PARAM_FIELD_MEMBER_COUNT |
+                                        UCG_GROUP_PARAM_FIELD_MEMBER_INDEX,
+            .member_index             = !is_server,
+            .member_count             = 1 + !is_server
     };
 
     status = ucg_config_read(NULL, NULL, &context_config);
@@ -88,10 +88,7 @@ ucg_minimal_init(ucg_minimal_ctx_t *ctx,
     }
 
     do {
-        status = ucp_worker_progress(ctx->worker);
-        if (status != UCS_OK) {
-            goto cleanup_listener;
-        }
+        (void) ucp_worker_progress(ctx->worker);
 
         status = ucg_group_query(ctx->group, &group_attr);
         if (status != UCS_OK) {

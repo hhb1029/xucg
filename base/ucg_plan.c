@@ -8,7 +8,6 @@
 #include "ucg_context.h"
 
 #include <ucg/api/ucg.h>
-#include <ucp/core/ucp_types.h>
 #include <ucp/core/ucp_ep.inl>
 #include <ucp/core/ucp_ep.inl>
 #include <ucp/core/ucp_proxy_ep.h>
@@ -371,6 +370,16 @@ static ucs_status_t ucg_plan_get_incast_hash(ucg_group_h group,
     return UCS_OK;
 }
 
+ucp_ep_h ucp_plan_get_p2p_ep_by_index(ucg_group_h group,
+                                      ucg_group_member_index_t group_idx)
+{
+    khash_t(ucg_group_ep) *khash = &group->p2p_eps;
+    khiter_t iter                = kh_get(ucg_group_ep, khash, group_idx);
+
+    ucs_assert(iter != kh_end(khash));
+    return kh_value(khash, iter);
+}
+
 static ucs_status_t ucg_plan_connect_by_hash_key(ucg_group_h group,
                                                  ucg_group_member_index_t group_idx,
                                                  khash_t(ucg_group_ep) *khash,
@@ -441,22 +450,14 @@ static ucs_status_t ucg_plan_connect_by_hash_key(ucg_group_h group,
     return UCS_OK;
 }
 
-static ucs_status_t ucg_plan_await_lane_connection(ucp_worker_h worker,
-                                                   ucp_ep_h ucp_ep,
-                                                   ucp_lane_index_t lane,
-                                                   uct_ep_h uct_ep)
+ucs_status_t
+ucg_plan_await_lane_connection(ucp_worker_h worker, ucp_ep_h ucp_ep,
+                               ucp_lane_index_t lane, uct_ep_h uct_ep)
 {
     if (uct_ep == NULL) {
         ucs_status_t status = ucp_wireup_connect_remote(ucp_ep, lane);
         return (status != UCS_OK) ? status : UCS_INPROGRESS;
     }
-
-    ucs_assert(!ucp_proxy_ep_test(uct_ep));
-//    if (ucp_proxy_ep_test(uct_ep)) {
-//        ucp_proxy_ep_t *proxy_ep = ucs_derived_of(uct_ep, ucp_proxy_ep_t);
-//        uct_ep = proxy_ep->uct_ep;
-//        ucs_assert(uct_ep != NULL);
-//    }
 
     ucs_assert(uct_ep->iface != NULL);
     if (uct_ep->iface->ops.ep_am_short ==
@@ -611,9 +612,9 @@ ucs_status_t ucg_plan_connect(ucg_group_h group,
                               uct_ep_h *ep_p, const uct_iface_attr_t **ep_attr_p,
                               uct_md_h *md_p, const uct_md_attr_t    **md_attr_p)
 {
-    ucp_ep_h ucp_ep;
-    ucp_lane_index_t lane;
     ucs_status_t status;
+    ucp_lane_index_t lane = UCP_NULL_LANE;
+    ucp_ep_h ucp_ep       = NULL;
 
     if (flags) {
 #ifdef HAVE_UCT_COLLECTIVES
