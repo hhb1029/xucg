@@ -476,7 +476,7 @@ static int ucg_builtin_allreduce_algo_select(const ucg_group_params_t *group_par
 static int ucg_builtin_alltoallv_algo_select(const ucg_group_params_t *group_params,
                                              const ucg_collective_params_t *coll_params)
 {
-    return UCG_ALGORITHM_ALLTOALLV_NODE_AWARE_PLUMMER;
+    return UCG_ALGORITHM_ALLTOALLV_LADD;
 }
 
 typedef int (*algo_select_f)(const ucg_group_params_t *group_params, const ucg_collective_params_t *coll_params);
